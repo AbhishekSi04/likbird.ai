@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get("q")?.trim() || "";
   const status = searchParams.get("status")?.trim() || "";
 
-  const where = {
+  const where: any = {
     AND: [
       q
         ? {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         : {},
       status ? { status: status as any } : {},
     ],
-  } as const;
+  };
 
   const items = await prisma.lead.findMany({
     take: take + 1,
