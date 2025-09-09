@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  passwordHash   String
+  name           String?
+  image          String?
+  emailVerified  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  campaigns      Campaign[]
+  leads          Lead[]
+}
+
+model Campaign {
+  id        String         @id @default(uuid())
+  name      String
+  status    CampaignStatus @default(draft)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  leads     Lead[]
+  ownerId   String
+  owner     User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  @@unique([name, ownerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Lead {
+  id              String    @id @default(uuid())
+  name            String
+  email           String
+  company         String
+  status          LeadStatus @default(pending)
+  lastContactDate DateTime
+  campaignId      String
+  campaign        Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  ownerId         String
+  owner           User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  @@index([email])
+  @@index([status])
+  @@index([lastContactDate])
+}
+
+enum CampaignStatus {
+  draft
+  active
+  paused
+  completed
+}
+
+enum LeadStatus {
+  pending
+  contacted
+  responded
+  converted
+}
+
+
